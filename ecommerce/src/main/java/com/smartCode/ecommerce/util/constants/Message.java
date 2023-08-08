@@ -1,5 +1,7 @@
 package com.smartCode.ecommerce.util.constants;
 
+import org.aspectj.util.IStructureModel;
+
 public interface Message {
     String USERNAME_IS_NOT_AVAILABLE = "This username isn't available. Please try another";
     String PASSWORD_MATCHING = "Password does not match";
@@ -9,17 +11,14 @@ public interface Message {
     String INVALID_CODE = "Invalid code";
     String INVALID_PASSWORD = "Invalid password";
     String USER_IS_NOT_VERIFIED = "Please verify first";
-    String PRODUCT_NOT_FOUND = "Product not found";
 
-    static String userNotFound(Integer id) {
-        return String.format("User with id: %d not found", id);
+    static String userNotFound(Integer id){
+        return String.format("User with id: %d not found",id);
     }
-
-    static String userNotFound(String email) {
-        return String.format("User with email: %s not found", email);
+    static String userNotFound(String email){
+        return String.format("User with email: %s not found",email);
     }
-
-    static String productNotFound(Integer id) {
-        return String.format("Product with id: %d not found", id);
+    static String productNotFound(Integer id){
+        return String.format("Product with id: %d not found",id);
     }
 }

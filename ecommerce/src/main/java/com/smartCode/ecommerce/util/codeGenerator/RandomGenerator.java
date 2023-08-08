@@ -1,4 +1,4 @@
-package com.smartCode.ecommerce.util;
+package com.smartCode.ecommerce.util.codeGenerator;
 
 import org.springframework.stereotype.Service;
 
