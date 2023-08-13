@@ -1,5 +1,6 @@
 package com.smartCode.ecommerce.service.card.impl;
 
+import com.smartCode.ecommerce.feign.CardFeignClient;
 import com.smartCode.ecommerce.model.dto.card.CreateCardDto;
 import com.smartCode.ecommerce.model.dto.card.ResponseCardDto;
 import com.smartCode.ecommerce.service.card.CardService;
@@ -7,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -20,14 +22,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CardServiceImpl implements CardService {
 
+    private final CardFeignClient cardFeignClient;
+
     @Transactional
     @Override
     public ResponseCardDto createCard(CreateCardDto createCardDto) {
-        return new RestTemplate().postForEntity(
-                "http://localhost:8081/cards", createCardDto, ResponseCardDto.class).getBody();
+        return cardFeignClient.createCard(createCardDto).getBody();
     }
-
-
 
     @Override
     @Transactional
@@ -40,19 +41,18 @@ public class CardServiceImpl implements CardService {
     public ResponseCardDto deleteCardById(Integer id) {
         Map<String, Integer> params = new HashMap<>();
         params.put("id", id);
-        return new RestTemplate().exchange(
-                "http://localhost:8081/cards", HttpMethod.DELETE, new HttpEntity<>(new HttpHeaders()),
-                ResponseCardDto.class, params).getBody();
+        return cardFeignClient.deleteCardById(id).getBody();
     }
+
     @Override
     @Transactional(readOnly = true)
     public List<ResponseCardDto> getCardsByUserId(Integer userId) {
-        return Arrays.asList(new RestTemplate().getForEntity(
-                String.format("http://localhost:8081/cards/users/%d", userId), ResponseCardDto[].class).getBody());
+        return cardFeignClient.getCardsByUserId(userId);
     }
+
     @Override
     @Transactional()
     public ResponseCardDto getCardById(Integer id) {
-        return new RestTemplate().getForEntity(String.format("http://localhost:8081/cards/%d", id),ResponseCardDto.class).getBody();
+        return cardFeignClient.getCardById(id).getBody();
     }
 }
