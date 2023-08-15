@@ -4,7 +4,9 @@ import com.smartCode.ecommerce.model.entity.token.TokenEntity;
 import com.smartCode.ecommerce.model.entity.user.UserEntity;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
+@EnableJpaRepositories
 public interface TokenRepository extends JpaRepository<TokenEntity, Integer> {
 
 //    @Cacheable(value = "tokens")
@@ -14,4 +16,6 @@ public interface TokenRepository extends JpaRepository<TokenEntity, Integer> {
     void deleteByUser(UserEntity user);
 
     TokenEntity findTokenEntityByUserId(Integer id);
+
+    void deleteTokenEntityByUserIdAndToken(Integer userId, String token);
 }

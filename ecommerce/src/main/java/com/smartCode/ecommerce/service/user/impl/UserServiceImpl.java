@@ -1,9 +1,9 @@
 package com.smartCode.ecommerce.service.user.impl;
 
-import com.smartCode.ecommerce.util.constants.Gender;
 import com.smartCode.ecommerce.exceptions.DuplicationException;
 import com.smartCode.ecommerce.exceptions.ResourceNotFoundException;
 import com.smartCode.ecommerce.exceptions.ValidationException;
+import com.smartCode.ecommerce.feign.NotificationFeignClient;
 import com.smartCode.ecommerce.mapper.UserMapper;
 import com.smartCode.ecommerce.model.dto.user.*;
 import com.smartCode.ecommerce.model.entity.token.TokenEntity;
@@ -17,6 +17,7 @@ import com.smartCode.ecommerce.service.user.UserService;
 import com.smartCode.ecommerce.util.codeGenerator.RandomGenerator;
 import com.smartCode.ecommerce.util.constants.Message;
 import com.smartCode.ecommerce.util.constants.Role;
+import com.smartCode.ecommerce.util.event.publisher.CustomEventPublisher;
 import com.smartCode.ecommerce.util.security.CurrentUser;
 import com.smartCode.ecommerce.util.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -46,8 +47,10 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final TokenService tokenService;
+    private final NotificationFeignClient notificationFeignClient;
+    private final CustomEventPublisher customEventPublisher;
 
-    @Override
+
     @Transactional
     public ResponseUserDto register(CreateUserDto user) {
         if (userRepository.findByEmail(user.getEmail()) != null) {
@@ -59,16 +62,22 @@ public class UserServiceImpl implements UserService {
         if (userRepository.findByPhone(user.getPhone()) != null) {
             throw new DuplicationException(Message.PHONE_NUMBER_IS_NOT_AVAILABLE);
         }
+        String generatedCode = RandomGenerator.generateNumericString(6);
+        UserEntity entity = setProperties(user, generatedCode);
+        entity = userRepository.save(entity);
+        notificationFeignClient.verify(entity.getEmail(), entity.getCode());
+        customEventPublisher.publishRegistrationEvent(entity);
+        return userMapper.toDto(entity);
+    }
+
+    private UserEntity setProperties(CreateUserDto user, String generatedCode) {
         UserEntity entity = userMapper.toEntity(user);
         entity.setRole(roleRepository.findByRole(Role.ROLE_USER));
         entity.setPassword(passwordEncoder.encode(entity.getPassword()));
-        entity.setCode(RandomGenerator.generateNumericString(6));
         entity.setAge(Year.now().getValue() - entity.getDayOfBirth().getYear());
-        UserEntity save = userRepository.save(entity);
-        emailService.sendSimpleMessage(entity.getEmail(), "Verification",
-                "Your verification code is " + save.getCode());
-        return userMapper.toDto(save);
+        return entity;
     }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -127,7 +136,6 @@ public class UserServiceImpl implements UserService {
         UserEntity user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Message.userNotFound(id)));
         cardService.deleteCardsByUserId(id);
         userRepository.delete(user);
-        tokenService.deleteByUser(user);
         return userMapper.toDto(user);
     }
 
@@ -153,7 +161,7 @@ public class UserServiceImpl implements UserService {
             throw new DuplicationException(Message.PHONE_NUMBER_IS_NOT_AVAILABLE);
         }
         user1.setPhone(nonNull(updatedUser.getPhone()) ? updatedUser.getPhone() : user1.getPhone());
-//        user1.setGender(nonNull(updatedUser.getGender()) ? updatedUser.getGender() : user1.getGender());
+        user1.setGender(nonNull(updatedUser.getGender()) ? updatedUser.getGender() : user1.getGender());
         user1.setDayOfBirth(nonNull(updatedUser.getDayOfBirth()) ? updatedUser.getDayOfBirth() : user1.getDayOfBirth());
         user1.setAge(Year.now().getValue() - updatedUser.getDayOfBirth().getYear());
         UserEntity save = userRepository.save(user1);
@@ -201,10 +209,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void logout() {
-        Integer id = CurrentUser.getId();
-        UserEntity userEntity = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Message.userNotFound(id)));
-        tokenService.deleteByUser(userEntity);
+    public void logout(String token) {
+        tokenService.deleteToken(CurrentUser.getId(), token.split("\\.")[2]);
     }
     //    @Override
 //    @Transactional

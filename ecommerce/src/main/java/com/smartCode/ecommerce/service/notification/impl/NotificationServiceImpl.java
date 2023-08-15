@@ -2,8 +2,10 @@ package com.smartCode.ecommerce.service.notification.impl;
 
 import com.smartCode.ecommerce.feign.NotificationFeignClient;
 import com.smartCode.ecommerce.model.dto.notification.CreateNotificationDto;
+import com.smartCode.ecommerce.model.dto.notification.NotificationDto;
 import com.smartCode.ecommerce.model.dto.notification.ResponseNotificationDto;
 import com.smartCode.ecommerce.service.notification.NotificationService;
+import com.smartCode.ecommerce.util.constants.Message;
 import com.smartCode.ecommerce.util.security.CurrentUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,18 @@ public class NotificationServiceImpl implements NotificationService {
     public ResponseNotificationDto create(CreateNotificationDto notificationDto) {
         notificationDto.setUserId(CurrentUser.getId());
         return notificationFeignClient.create(notificationDto).getBody();
+    }
+
+    @Override
+    @Transactional
+    public void createForRegistration(String code, Integer userId, String email) {
+        NotificationDto notificationRequestDto = new NotificationDto();
+        notificationRequestDto.setTitle(Message.EMAIL_SUBJECT);
+        notificationRequestDto.setContent(Message.EMAIL_MESSAGE + code);
+        notificationRequestDto.setEmail(email);
+        notificationRequestDto.setUserId(userId);
+
+        notificationFeignClient.sendVerificationCode(notificationRequestDto);
     }
 
     @Override

@@ -1,16 +1,13 @@
 package com.smartCode.ecommerce.service.user;
 
-import com.smartCode.ecommerce.model.dto.user.ChangePasswordUserDto;
-import com.smartCode.ecommerce.model.dto.user.CreateUserDto;
-import com.smartCode.ecommerce.model.dto.user.PartialUpdateUserDto;
-import com.smartCode.ecommerce.model.dto.user.ResponseUserDto;
-import com.smartCode.ecommerce.model.dto.user.UpdateUserDto;
-import com.smartCode.ecommerce.model.dto.user.UserAuthDto;
+import com.smartCode.ecommerce.model.dto.user.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface UserService {
     ResponseUserDto register(CreateUserDto user);
+
     List<ResponseUserDto> getAllUsers();
 
     ResponseUserDto getById(Integer id);
@@ -23,10 +20,11 @@ public interface UserService {
 
     ResponseUserDto delete(Integer id);
 
-    ResponseUserDto updateUser(Integer id,UpdateUserDto updatedUser);
+    ResponseUserDto updateUser(Integer id, UpdateUserDto updatedUser);
+
     ResponseUserDto changePassword(Integer id, ChangePasswordUserDto dto);
 
-    void logout();
+    void logout(String token);
 
 //    List<ResponseUserDto> search(FilterSearchUser.Search userSearch);
 //

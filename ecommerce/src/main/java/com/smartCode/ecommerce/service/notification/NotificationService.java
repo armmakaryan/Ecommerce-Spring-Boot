@@ -12,4 +12,8 @@ public interface NotificationService {
     List<ResponseNotificationDto> getReady();
 
     List<ResponseNotificationDto> getWaiting();
+
+    void createForRegistration(String code, Integer userId, String email);
+
+
 }
