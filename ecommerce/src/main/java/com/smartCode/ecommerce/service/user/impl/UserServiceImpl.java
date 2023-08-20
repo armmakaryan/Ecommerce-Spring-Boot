@@ -17,7 +17,6 @@ import com.smartCode.ecommerce.service.user.UserService;
 import com.smartCode.ecommerce.util.codeGenerator.RandomGenerator;
 import com.smartCode.ecommerce.util.constants.Message;
 import com.smartCode.ecommerce.util.constants.Role;
-import com.smartCode.ecommerce.util.event.publisher.CustomEventPublisher;
 import com.smartCode.ecommerce.util.security.CurrentUser;
 import com.smartCode.ecommerce.util.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;

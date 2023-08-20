@@ -7,13 +7,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface NotificationService {
-    ResponseNotificationDto create(CreateNotificationDto notificationDto);
+    void create(CreateNotificationDto notificationDto);
 
     List<ResponseNotificationDto> getReady();
 
     List<ResponseNotificationDto> getWaiting();
 
-    void createForRegistration(String code, Integer userId, String email);
 
-
+    void verify(String email, String code, Integer id);
 }
